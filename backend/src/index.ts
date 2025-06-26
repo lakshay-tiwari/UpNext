@@ -1,12 +1,17 @@
-import { server as WebSocketServer } from "websocket";
+import { connection, server as WebSocketServer } from "websocket";
 import http from 'http';
-import { messageHandler } from "./messageHandler";
+import { UserManager } from "./UserManager";
+import { InMemory } from "./store/InMemoryStore";
+
 
 var server = http.createServer(function(request, response) {
     console.log((new Date()) + ' Received request for ' + request.url);
     response.writeHead(404);
     response.end();
 });
+
+const userManager = UserManager.getInstance();
+const store = InMemory.getInstance();
 
 server.listen(8080, function() {
     console.log((new Date()) + ' Server is listening on port 8080');
@@ -37,7 +42,7 @@ wsServer.on('request', function(request) {
     }
     
     let connection = request.accept(null, request.origin);
-    
+
     connection.on('message', function(message) {
         if (message.type !== 'utf8') return;
 
@@ -49,3 +54,9 @@ wsServer.on('request', function(request) {
         console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
     });
 });
+
+
+
+function messageHandler(message:string){
+
+}

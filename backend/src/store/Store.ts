@@ -5,19 +5,24 @@ export abstract class Store{
 
     }
 
-    initRoom(){
+    initRoom(roomId:string){
 
     }
 
-    addChat(){
+    addChat(roomId: string, userId: string , userName: string , message: string){
 
     }
 
-    getChat(){
+    // deleteChat(){
+        
+    // }
+
+    getChat(roomId:string){
 
     }
 
-    upvote(){
+    upvote(roomId:string, userId:string , chatId:string){
 
     }
 }
+
