@@ -26,24 +26,41 @@ export class UserManager{
         }
         return UserManager.instance
     }
+    
+    removeUserFromAnyRoom(userId: string){ // make one room in one user
+        for (const [roomId,room] of this.rooms.entries()){
+            const index = room.users.findIndex(u => u.id === userId);
+            if (index !== -1){
+                room.users.splice(index,1);
+                console.log(`Removed ${userId} from room ${roomId} (pre-existing)`);
+            }
+        }
+    }
 
     addUser(id: string, roomId: string, socket: connection , name:string){    
         if (!this.rooms.has(roomId)) {
              this.rooms.set(roomId, { users: [] });
         }
+        this.removeUserFromAnyRoom(id); // remove old user 
+
         const room = this.rooms.get(roomId)!;
 
-        // Check if user already exists
-        const existingUser = room.users.find(user => user.id === id);
-        if (existingUser) {
-            console.log("User already in the room");
-            
-            // Optional: update name if needed
-            if (existingUser.name !== name) {
-                existingUser.name = name;
-            }
-            return;
-        }
+        /**
+         * this.removeUserFromAnyRoom already delete the existing user so why you are doing this 
+         * this make the code redundent for checking existing user
+            // // Check if user already exists
+            // const existingUser = room.users.find(user => user.id === id);
+            // if (existingUser) {
+            //     console.log("User already in the room");
+                
+            //     // Optional: update name if needed
+            //     if (existingUser.name !== name) {
+            //         existingUser.name = name;
+            //     }
+            //     return;
+            // }
+
+        */
 
         // Add new user
         room.users.push({ id, name, conn:socket });
@@ -90,6 +107,16 @@ export class UserManager{
             conn.sendUTF(JSON.stringify(message));
         })
         
+    }
+
+    findUserByConnection(socket: connection){
+        for (const [roomId, room] of this.rooms.entries()){
+            const user = room.users.find(u => u.conn === socket);
+            if (user){
+                return { roomId ,userId:user.id };
+            }
+        }
+        return;
     }
 }
 

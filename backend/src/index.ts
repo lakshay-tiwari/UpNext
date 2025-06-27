@@ -39,7 +39,7 @@ function cleanMap(map: Map<string, any>): any { // this is for testing
 
   return cleaned;
 }
-setInterval(()=>{ // testing
+setInterval(()=>{ // this is for testing
 console.log("store:");
 console.log(safeStringify(cleanMap(store.getMap()), 2));
 console.log("\n");
@@ -86,8 +86,18 @@ wsServer.on('request', function(request) {
             messageHandler(connection,JSON.parse(message.utf8Data));
         }
     });
+
     connection.on('close', function(reasonCode, description) {
-        console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+        // after loosing connection try to remove from userManager and if person wants again to connect then it send 
+        // again join room message which help to connect again 
+        const findUser = userManager.findUserByConnection(connection);
+        if (!findUser){
+            console.log("User not found in any room");
+            return;
+        }
+        const { roomId , userId } = findUser;
+        userManager.removeUser(roomId,userId);
+        console.log(`User ${userId} removed from room ${roomId}`);
     });
 });
 
@@ -215,12 +225,9 @@ function messageHandler(ws:connection, message:IncomingMessageType){
     }
 }
 
-
-
-/*
- userId: z.string(),
-    roomId: z.string(),
-    message: z.string(),
-    username: z.string()
-
-    */
+/**
+    * You can check after every 3 hour is room has not any user then remove remove 
+    * or you can take time if it has time less than 4 hour remove it 
+    * but when do any thing in room try to update time
+*/
+ 
