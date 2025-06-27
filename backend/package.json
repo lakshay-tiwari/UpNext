@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev" : "ts-node ./src/index.ts",
+    "dev": "ts-node ./src/index.ts",
     "build": "tsc -b",
-    "start" : "node ./dist/index.js"
+    "start": "node ./dist/index.js"
   },
   "keywords": [],
   "author": "",
@@ -17,7 +17,8 @@
     "@types/express": "^5.0.2",
     "@types/websocket": "^1.0.10",
     "express": "^5.1.0",
-    "websocket": "^1.0.35"
+    "websocket": "^1.0.35",
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@types/node": "^22.15.29",

@@ -5,7 +5,11 @@ export abstract class Store{
 
     }
 
-    initRoom(roomId:string){
+    roomExist(roomId:string){
+
+    }
+
+    initRoom(){
 
     }
 
