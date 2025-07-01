@@ -4,9 +4,51 @@ import { UserManager } from "./UserManager";
 import { InMemory , UpvoteResponse , Chat } from "./store/InMemoryStore";
 import { IncomingMessageType, SupportedMessage } from "./message/incomingMessage";
 import { OutgoingMessage , SupportedOutgoing } from "./message/outgoingMessage";
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
 
+export interface MyJwtPayload {
+    name: string;
+    email: string;
+    sub: string;
+    id: string;
+    iat: number;  
+    exp: number;  
+    jti: string;  
+}
+
+
+function verifyToken(token:string){
+    try {
+        const secret = process.env.JWT_SECRET!;
+        const decoded = jwt.verify(token,secret) as MyJwtPayload;
+        return {
+            message: "Decoded Successfully",
+            decoded,
+        }
+    } catch (error) {
+        return {
+            message: "Verification fail",
+            decoded : null
+        }
+    }
+}
 var server = http.createServer(function(request, response) {
     console.log((new Date()) + ' Received request for ' + request.url);
+
+    // fixing cors issue 
+    response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+    response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    response.setHeader("Access-Control-Allow-Credentials", "true");
+
+     if (request.method === "OPTIONS") {
+        response.writeHead(204);
+        response.end();
+        return;
+    }
+
     response.writeHead(404);
     response.end();
 });
@@ -66,7 +108,8 @@ const wsServer = new WebSocketServer({
 // @ts-ignore
 function originIsAllowed(origin) {
   // put logic here to detect whether the specified origin is allowed.
-  return true;
+  return true; // this is for test without frontend using postwomen
+  // return origin === "http://localhost:3000";
 }
 
 wsServer.on('request', function(request) {
@@ -102,10 +145,28 @@ wsServer.on('request', function(request) {
 });
 
 
+function sendMessageForjwt(socket: connection){ // this is used to send message if connection fail
+    const errorMessage = {
+        message: "User is not loggedin"
+    }
+    socket.sendUTF(JSON.stringify(errorMessage));
+}
+
+
 
 function messageHandler(ws:connection, message:IncomingMessageType){
-    if (message.type === SupportedMessage.CreateRoom){
-        const { id , name } = message.payload; // id -> userId store in db , name-> userName
+    const checkToken = verifyToken(message.token);
+
+    if (checkToken.message === "Verification fail"){ 
+            sendMessageForjwt(ws);
+            return;
+    }
+
+    if (message.type === SupportedMessage.CreateRoom){        
+        const id = checkToken.decoded?.id!;
+        const name = checkToken.decoded?.name!;
+         // id -> userId store in db , name-> userName
+
         const roomId = store.initRoom();
         const outgoingPayload: OutgoingMessage = {
             type : SupportedOutgoing.RoomCreated ,
@@ -117,8 +178,12 @@ function messageHandler(ws:connection, message:IncomingMessageType){
         ws.sendUTF(JSON.stringify(outgoingPayload));
     }
 
+
     if (message.type === SupportedMessage.JoinRoom){
-        const { id, name , roomId} = message.payload;
+        const id = checkToken.decoded?.id!;
+        const name = checkToken.decoded?.name!;
+
+        const { roomId } = message.payload;
         const findRoom = store.roomExist(roomId);
         if (!findRoom){
             ws.sendUTF(JSON.stringify({
@@ -139,7 +204,10 @@ function messageHandler(ws:connection, message:IncomingMessageType){
     }
 
     if (message.type === SupportedMessage.SendMessage){
-        const { userId, roomId, msg , username } = message.payload ;
+        const userId = checkToken.decoded?.id!;
+        const username = checkToken.decoded?.name!;
+
+        const { roomId, msg } = message.payload ;
         const findRoom = store.roomExist(roomId);
         if (!findRoom){
             ws.sendUTF(JSON.stringify({
@@ -178,7 +246,8 @@ function messageHandler(ws:connection, message:IncomingMessageType){
     }
 
     if (message.type === SupportedMessage.UpvoteMessage){
-        const { roomId , userId , chatId } = message.payload;
+        const userId = checkToken.decoded?.id!;
+        const { roomId , chatId } = message.payload;
         if (!store.roomExist(roomId)){ // check room exist or not 
              ws.sendUTF(JSON.stringify({
                 type: SupportedOutgoing.UpvoteChat,

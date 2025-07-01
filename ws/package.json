@@ -14,13 +14,19 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.2",
     "@types/websocket": "^1.0.10",
+    "cors": "^2.8.5",
+    "dotenv": "^17.0.0",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "websocket": "^1.0.35",
     "zod": "^3.25.67"
   },
   "devDependencies": {
+    "@types/dotenv": "^6.1.1",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.15.29",
     "ts-node": "^10.9.2"
   }

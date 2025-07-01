@@ -9,45 +9,45 @@ SupportedMessage {
 }
 
 export type IncomingMessageType = {
+    token: string, 
     type: SupportedMessage.CreateRoom
-    payload: CreatePayload
+    
 } | {
+    token: string, 
     type: SupportedMessage.JoinRoom,
     payload: JoinRoomInitType
 } | {
+    token: string,
     type: SupportedMessage.SendMessage,
     payload: UserMessageType
 } | {
+    token: string,
     type: SupportedMessage.UpvoteMessage,
     payload: UpvoteMessageType
 }
 
-type CreatePayload = {
-    id: string,
-    name: string
-}
-
 const JoinRoomInit = z.object({
-    id: z.string(),
-    name: z.string(),
+    // id: z.string(),
+    // name: z.string(),
+   
     roomId: z.string()
 })
 
 type JoinRoomInitType = z.infer<typeof JoinRoomInit>;
 
 const UserMessage = z.object({
-    userId: z.string(),
-    roomId: z.string(),
-    msg: z.string(),
-    username: z.string()
+    // userId: z.string(), 
+    roomId: z.string(), // only required field
+    msg: z.string(),    // only required field
+   
+    // username: z.string()
 })
 
 type UserMessageType = z.infer<typeof UserMessage>;
 
 const UpvoteMessage = z.object({
-    roomId: z.string(),
-    userId: z.string(),
-    chatId: z.string()
+    roomId: z.string(),  // required
+    chatId: z.string()  // required
 })
 
 type UpvoteMessageType = z.infer<typeof UpvoteMessage>;

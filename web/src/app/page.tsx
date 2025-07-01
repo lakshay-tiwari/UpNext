@@ -1,8 +1,10 @@
+import { AppBar } from "@/components/AppBar";
 
-export default function Home() {
-  return (
-    <div>
-      
+
+export default async function Home() {
+  return <div className="h-screen bg-black-300">
+      <AppBar/>
     </div>
-  );
 }
+
+ 
